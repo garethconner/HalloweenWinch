@@ -12,13 +12,14 @@
 AccelStepper lift(AccelStepper::DRIVER); // step & direction on 2, 3
 AccelStepper track(AccelStepper::DRIVER, 4, 5);  // step & direction on 4, 5
 
-const int runCueButton = 43;
+const int runButton = 43;
 const int selectModeButton = 45;
 const int upButton = 47;
 const int downButton = 49;
 const int leftButton = 51;
 const int rightButton = 53;
 const int jogSpeed = 4000;
+const int cueSpeed = 8000;
 
 int runButtonState;
 int selectButtonState;
@@ -40,12 +41,13 @@ void setup()
    pinMode(downButton, INPUT_PULLUP);
    pinMode(leftButton, INPUT_PULLUP);
    pinMode(rightButton, INPUT_PULLUP);
+   pinMode(runButton, INPUT_PULLUP);
    
-   lift.setMaxSpeed(4000);
-   lift.setAcceleration(1000);
+   lift.setMaxSpeed(jogSpeed);
+   lift.setAcceleration(2000);
    
-   track.setMaxSpeed(4000);
-   track.setAcceleration(1000);
+   track.setMaxSpeed(jogSpeed);
+   track.setAcceleration(2000);
    
    Serial.begin(115200);
    Serial.println("working!");
@@ -64,6 +66,7 @@ void loop()
   upButtonState = digitalRead(upButton);
   leftButtonState = digitalRead(leftButton);
   rightButtonState = digitalRead(rightButton);
+  runButtonState = digitalRead(runButton);
   
   if (downButtonState == LOW){
     //button down, is this new?
@@ -124,12 +127,36 @@ void loop()
      stopTrack();
    }
   }
-  
+
+  if (runButtonState == LOW){
+    //button down, changed?
+    if (runButtonState != lastRunButton){
+      Serial.println("Run cue");
+      track.setMaxSpeed(cueSpeed);
+      lift.setMaxSpeed(cueSpeed);
+      track.moveTo(76000);
+      lift.moveTo(66000);
+    } else {
+      if (lift.distanceToGo() == 0)
+        lift.moveTo(0);
+      if (track.distanceToGo() == 0)
+        track.moveTo(0);
+      track.run();
+      lift.run();
+    }
+  } else {
+    //button up, changed?
+    if (runButtonState != lastRunButton){
+      stopTrack();
+      stopLift();
+    }
+  }
   
   lastDownButton = downButtonState;
   lastUpButton = upButtonState;
   lastLeftButton = leftButtonState;
   lastRightButton = rightButtonState;
+  lastRunButton = runButtonState;
 }
 
 void stopTrack(){
