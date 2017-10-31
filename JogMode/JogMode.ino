@@ -12,14 +12,19 @@
 AccelStepper lift(AccelStepper::DRIVER); // step & direction on 2, 3
 AccelStepper track(AccelStepper::DRIVER, 4, 5);  // step & direction on 4, 5
 
-const int runButton = 43;
-const int selectModeButton = 45;
+const int runButton = 45;
+const int selectModeButton = 43;
 const int upButton = 47;
 const int downButton = 49;
 const int leftButton = 51;
 const int rightButton = 53;
 const int jogSpeed = 4000;
-const int cueSpeed = 8000;
+const int cueSpeed = 4000;
+
+const int high = 66000;
+const int low = 50000;
+const int left = 0;
+const int right = 172000;
 
 int runButtonState;
 int selectButtonState;
@@ -35,6 +40,9 @@ int lastDownButton;
 int lastLeftButton;
 int lastRightButton;
 
+int nextLiftPos;
+int nextTrackPos;
+
 void setup()
 {  
    pinMode(upButton, INPUT_PULLUP);
@@ -44,10 +52,10 @@ void setup()
    pinMode(runButton, INPUT_PULLUP);
    
    lift.setMaxSpeed(jogSpeed);
-   lift.setAcceleration(2000);
+   lift.setAcceleration(1000);
    
    track.setMaxSpeed(jogSpeed);
-   track.setAcceleration(2000);
+   track.setAcceleration(1000);
    
    Serial.begin(115200);
    Serial.println("working!");
@@ -134,13 +142,18 @@ void loop()
       Serial.println("Run cue");
       track.setMaxSpeed(cueSpeed);
       lift.setMaxSpeed(cueSpeed);
-      track.moveTo(76000);
-      lift.moveTo(66000);
+      track.moveTo(right);
+      lift.moveTo(high);
     } else {
       if (lift.distanceToGo() == 0)
-        lift.moveTo(0);
-      if (track.distanceToGo() == 0)
-        track.moveTo(0);
+      {
+        nextLiftPos = (lift.currentPosition() == high) ? low : high;
+        lift.moveTo(nextLiftPos);
+      }
+      if (track.distanceToGo() == 0){
+        nextTrackPos = (track.currentPosition() == right) ? left : right;
+        track.moveTo(nextTrackPos);
+      }
       track.run();
       lift.run();
     }
