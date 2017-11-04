@@ -21,10 +21,10 @@ const int rightButton = 53;
 const int jogSpeed = 4000;
 const int cueSpeed = 4000;
 
-const int high = 66000;
-const int low = 50000;
-const int left = 0;
-const int right = 172000;
+const int high_pos = 66000;
+const int low_pos = 50000;
+const int left_pos = 0;
+const int right_pos = 172000;
 
 int runButtonState;
 int selectButtonState;
@@ -40,8 +40,8 @@ int lastDownButton;
 int lastLeftButton;
 int lastRightButton;
 
-int nextLiftPos;
-int nextTrackPos;
+long nextLiftPos;
+long nextTrackPos;
 
 void setup()
 {  
@@ -55,7 +55,7 @@ void setup()
    lift.setAcceleration(1000);
    
    track.setMaxSpeed(jogSpeed);
-   track.setAcceleration(1000);
+   track.setAcceleration(2000);
    
    Serial.begin(115200);
    Serial.println("working!");
@@ -142,17 +142,30 @@ void loop()
       Serial.println("Run cue");
       track.setMaxSpeed(cueSpeed);
       lift.setMaxSpeed(cueSpeed);
-      track.moveTo(right);
-      lift.moveTo(high);
+      track.moveTo(175000);
+      lift.moveTo(66000);
+      Serial.println("Setting cue targets");
     } else {
       if (lift.distanceToGo() == 0)
       {
-        nextLiftPos = (lift.currentPosition() == high) ? low : high;
+        if (lift.currentPosition() == 66000){
+          nextLiftPos = 50000;
+        } else {
+          nextLiftPos = 66000;
+        }
         lift.moveTo(nextLiftPos);
+        Serial.println("Reset lift target");
+        Serial.println(nextLiftPos);
       }
       if (track.distanceToGo() == 0){
-        nextTrackPos = (track.currentPosition() == right) ? left : right;
+        if (track.currentPosition() == 175000){
+          nextTrackPos = 0;
+        } else {
+          nextTrackPos = 175000;
+        }
         track.moveTo(nextTrackPos);
+        Serial.println("Reset track target");
+        Serial.println(nextTrackPos);
       }
       track.run();
       lift.run();
